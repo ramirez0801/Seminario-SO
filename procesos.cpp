@@ -3,6 +3,8 @@
 
 #include <bits/stdc++.h>
 #include <iomanip>
+#include <conio.h>
+#include <windows.h>
 
 
 using namespace std;
@@ -11,11 +13,18 @@ using namespace std;
 struct Proceso
 {
     string sNombreProgramador, sOperacion;
-    int nId, nTiempoEstimado, nResult;
+    int nId, nTiempoEstimado, nResult, nDato1, nDato2;
 };
 
+struct Lote
+{
+    vector <Proceso> tPro;
+    int nIdLot, nNumPro;
+};
+
+
 //Funciones
-int operacion(string);
+void operacion(Proceso&);
 bool existeID(vector<int>, int);
 
 int main()
@@ -27,21 +36,18 @@ int main()
     cin>> nProc;
 
     Proceso tPro[nProc];
-    
+    queue <Lote> lotes;
+    Lote loteAct;
+    vector <Proceso> proTerminado;
+
     for(int j = 0; j < nProc; j++)
     {
         bool bBand = true;
         nTiempo = 0;
-        if((j+1) % 5 == 0)
-            nLotes++;
-        
-        cout<<"\t\tProceso "<<j+1<<endl;
+        cout<<"\tProceso "<<j+1<<endl;
         cout<<"Nombre: ";
         cin>>tPro[j].sNombreProgramador;
-        cout<<"Operacion: ";
-        cin>>tPro[j].sOperacion;
-        tPro[j].nResult = operacion(tPro[j].sOperacion);
-        cout<<"Lotes "<<nLotes<<endl;
+        operacion(tPro[j]);
 
         while(nTiempo <= 0)
         {
@@ -63,31 +69,69 @@ int main()
             {
                 tPro[j].nId = nIdProceso;
                 ids.push_back(nIdProceso);
-                cout<<"Guardado "<<tPro[j].nId<<endl;
             }
         }
+
+        if(loteAct.tPro.size() == 5)
+        {
+            lotes.push(loteAct);
+            loteAct.tPro.clear();
+        }
+        loteAct.tPro.push_back(tPro[j]);
+
 
     }
 
-
-    int nRestantes = 0;
-    for(int i = 0; i <= nLotes; i++)
+    if (!loteAct.tPro.empty()) 
     {
-        if(nLotes != 0)
-            nLotes -= 1;
-        
-        cout<<"Lotes pendientes: "<<nLotes<<endl;
-        cout<<"Nombre"<<setw(20)<<"Tiempo estimado"<<endl;
-        for(int j = nRestantes; j < nProc; j++ )
+        lotes.push(loteAct);
+    }
+
+    while(!lotes.empty())
+    {
+        cout<<"\nLotes pendientes: "<<lotes.size()-1<<endl;
+        Lote lote = lotes.front();
+        lotes.pop();
+
+        cout<<"\n****Lote en ejecucion****"<<endl;
+        cout << left << setw(20) << "Nombre" << setw(20) << "Tiempo"<<endl;
+        for(auto& pro : lote.tPro)
         {
-            if((j+1) % 5 == 0)
-            {
-                nRestantes = j+1;
-                cout<<"Restantes: "<<nRestantes<<endl;
-                break;
-            }
-            cout<< setw(5) <<tPro[j].sNombreProgramador << setw(10) << tPro[j].nTiempoEstimado<<endl;
+            cout<<setw(20)<<pro.sNombreProgramador<< setw(20) <<pro.nTiempoEstimado<<endl;
         }
+        
+        cout << "Presione cualquier tecla para continuar... "<<endl;
+        getch();
+        //Ejecucion del proceso
+        cout<<endl;
+        cout<<left<<setw(20)<<"Nombre"<<setw(20)<<"Operacion"<<setw(20)<<"Tiempo"<<setw(20)<<"ID"<<endl;
+        for(auto& pro : lote.tPro)
+        {
+            
+            cout<<setw(20)<<pro.sNombreProgramador<<setw(20)<<pro.sOperacion<<setw(20)<<pro.nTiempoEstimado<<setw(20)<<pro.nId<<endl;
+            cont += pro.nTiempoEstimado;
+            for (int i = 0; i <= 100; ++i) 
+            {
+                cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ') << "] " << i << "%";
+                cout.flush();
+                Sleep(pro.nTiempoEstimado);
+            }
+            proTerminado.push_back(pro);
+            cout << endl;
+            
+        }
+
+        cout<<"\n***Proceso Terminados***"<<endl;
+        cout<<left<<setw(20)<<"Nombre"<<setw(20)<<"Operacion"<<setw(15)<<"Dato 1"<<setw(15)<<"Dato 2"<<setw(20)<<"Resultado"<<endl;
+        for(Proceso& proT : proTerminado)
+        {
+            cout<<setw(20)<<proT.sNombreProgramador<<setw(20)<<proT.sOperacion<<setw(15)<<proT.nDato1<<setw(15)<<proT.nDato2<<setw(15)<<proT.nResult<<endl;
+        }
+        cout<<"Tiempo transcurrido: "<<cont<<endl;
+        cout << "Presione cualquier tecla para continuar... "<<endl;
+        getch();
+
+        system("cls");
     }
 
     cout<<"Exito";
@@ -106,41 +150,44 @@ bool existeID(vector<int>ids, int idPro)
     return false;
 }
 
-int operacion(string opera)
+void operacion(Proceso &pro)
 {
-    int nA,nB, nSum = 0;
     bool bFlag = true, bOperaFlag = false;
-    
+    string opera;
+
     do{
         bOperaFlag = false;
+        cout<<"Operacion: ";
+        cin>>pro.sOperacion;
+
         cout<<"Primer numero: ";
-        cin>>nA;
+        cin>>pro.nDato1;
 
         cout<<"Segundo numero: ";
-        cin>>nB;
+        cin>>pro.nDato2;
 
-        if(opera == "/" || opera == "%")
+        if(pro.sOperacion == "/" || pro.sOperacion == "%")
         {
-            if(nB == 0)
+            if(pro.nDato2 == 0)
                 while(bFlag)
                 {
                     cout<<"Operacion invalida, vuleve a introducir el segundo numero: ";
-                    cin>>nB;
-                    if(nB != 0)
+                    cin>>pro.nDato2;
+                    if(pro.nDato2 != 0)
                         bFlag = false;
                 }
         }
 
-        if(opera == "/")
-            nSum = nA/nB;
-        else if(opera == "%")
-            nSum = nA % nB;
-        else if(opera == "*")
-            nSum = nA * nB;
-        else if(opera == "+")
-            nSum = nA + nB;
-        else if(opera == "-")
-            nSum = nA - nB;
+        if(pro.sOperacion == "/")
+            pro.nResult = pro.nDato1 / pro.nDato2;
+        else if(pro.sOperacion == "%")
+            pro.nResult = pro.nDato1 % pro.nDato2;
+        else if(pro.sOperacion == "*")
+            pro.nResult = pro.nDato1 * pro.nDato2;
+        else if(pro.sOperacion == "+")
+            pro.nResult = pro.nDato1 + pro.nDato2;
+        else if(pro.sOperacion == "-")
+            pro.nResult = pro.nDato1 - pro.nDato2;
         else
         {
             cout<<"Operacion invalida"<<endl;
@@ -149,5 +196,4 @@ int operacion(string opera)
 
     }while(bOperaFlag);
 
-    return nSum;
 }
