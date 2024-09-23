@@ -13,7 +13,7 @@ class Proceso
 {
 public:
     int id;
-    int tiempo_max;
+    int tiempo_max, tiempo_trans;
     char operacion;
     int operandos[2];
     string resultado;
@@ -24,6 +24,7 @@ public:
         operandos[0] = op1;
         operandos[1] = op2;
         estado = "En espera";
+        tiempo_trans = 0;
     }
 
     void ejecutar() 
@@ -81,25 +82,25 @@ vector<Proceso> generar_procesos(int num_procesos) {
     return procesos;
 }
 
-
-void interrupcion(std::vector<Proceso>& procesos) {
+void interrupcion(vector <Proceso>& procesos) {
     if (!procesos.empty()) {
-        Proceso proceso = procesos.front();
+        cout<<"Tiempo transcurrido: "<<procesos[0].id<<endl;
+        procesos[0].estado = "Interrumpido";
+        procesos.push_back(procesos[0]);
         procesos.erase(procesos.begin());
-        proceso.estado = "Interrumpido";
-        procesos.push_back(proceso);
-        std::cout << "Proceso " << proceso.id << " interrumpido y movido al final de la cola.\n";
+        cout << "Proceso " << procesos[0].id << " interrumpido y movido al final de la cola.\n";
     }
 }
 
 void error(vector<Proceso>& procesos) {
-    if (!procesos.empty()) {
-        Proceso proceso = procesos.front();
-        procesos.erase(procesos.begin());
-        proceso.estado = "Error";
-        proceso.resultado = "Error";
-        cout << "Proceso " << proceso.id << " terminado por error.\n";
-    }
+    // if (!procesos.empty()) {
+    //     Proceso proceso = procesos.front();
+    //     procesos.erase(procesos.begin());
+    //     proceso.estado = "Error";
+    //     proceso.resultado = "Error";
+    //     cout << "Proceso " << proceso.id << " terminado por error.\n";
+    // }
+    cout<<"Interrrr";
 }
 
 void pausa() {
@@ -111,63 +112,84 @@ void pausa() {
     }
 }
 
-void ejecutar_procesos(vector<Proceso>& procesos) {
-    char comando;
+void mostrar(vector<Proceso>& procesos, queue <Lote>& lotes)
+{
+    char key;
     int seg;
 
-    queue <Proceso> termi;
-    for (auto& proceso : procesos) {
-        proceso.estado = "En ejecución";
-        cout << "Ejecutando proceso " << proceso.id << "...\n";
-        this_thread::sleep_for(chrono::milliseconds(proceso.tiempo_max * 100));
-        
-        cout<<left<<setw(20)<<"Nombre"<<setw(20)<<"Operacion"<<setw(20)<<"Tiempo"<<setw(20)<<"ID"<<endl;
-        seg = proceso.tiempo_max * 10;
-        for (int i = 0; i <= 100; ++i) 
+    vector <Proceso> termi;
+
+    while(!lotes.empty())
+    {
+        system("cls");
+        Lote lo = lotes.front();
+        lotes.pop();
+        int tam = lo.pro.size();
+        cout<<"Tam: "<<tam<<endl;
+        for(int m = 0; m < tam; m++)
         {
-            cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ') << "] " << i << "%";
-            cout.flush();
-            Sleep(seg);
-            if(kbhit())
+            //For que itera sobre los procesos
+            cout<<left<<setw(15)<<"Numero"<<setw(15)<<"Tiempo"<<setw(15)<<"Tiempo transcurrido"<<"\t\t\t Lotes restantes: "<<lotes.size()<<endl;
+            for(int i = 0; i < tam; i++)
             {
-                cout << "Presiona 'I' para interrupción, 'E' para error, 'P' para pausa, 'C' para continuar: ";
-                cin >> comando;
-                comando = toupper(comando);
-                if (comando == 'I') 
+                cout<<left<<setw(15)<<lo.pro[i].id<<setw(15)<<lo.pro[i].tiempo_max<<setw(15)<<lo.pro[i].tiempo_trans<<endl;
+                lo.pro[i].ejecutar();
+                
+            }
+            cout<<"Terminados: "<<endl;
+            cout<<left<<setw(15)<<"Numero"<<setw(15)<<"Operacion"<<setw(15)<<"Resultado"<<endl;
+            for(int j = 0; j < termi.size(); j++)
+            {
+                cout<<setw(15)<<termi[j].id<<setw(15)<<termi[j].operacion<<setw(15)<<termi[j].resultado<<endl;
+            }
+            cout<<endl;
+            seg = lo.pro[m].tiempo_max * 10;
+            for (int i = 0; i <= 100; ++i) 
+            {
+                cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ') << "] " << i << "%";
+                cout.flush();
+                Sleep(seg);
+                lo.pro[m].tiempo_trans = seg/10;
+                if(kbhit())
                 {
-                    interrupcion(procesos);
-                } 
-                else if (comando == 'E') 
-                {
-                    error(procesos);
-                } 
-                else if (comando == 'P') 
-                {
-                    pausa();
-                } 
-                else if (comando == 'C') 
-                {
-                    continue;
+                    cout << "Presiona 'I' para interrupción, 'E' para error, 'P' para pausa, 'C' para continuar: ";
+                    cin >> key;
+                    key = toupper(key);
+                    if (key == 'I') 
+                    {
+                        
+                        interrupcion(lo.pro);
+                        break;
+                    } 
+                    else if (key == 'E') 
+                    {
+                        //error(lo.pro[i]);
+                        cout<<"ERROR";
+                    } 
+                    else if (key == 'P') 
+                    {
+                        pausa();
+                    } 
+                    else if (key == 'C') 
+                    {
+                        continue;
+                    }
                 }
             }
+            if (key != 'I') {
+                termi.push_back(lo.pro[m]);
+            }
         }
-        proceso.ejecutar();
-        std::cout << "Proceso " << proceso.id << " terminado con resultado: " << proceso.resultado << "\n";
+       
     }
+    cout<<"Exito";
 }
-
-// void mostrar(vector<Proceso>& procesos)
-// {
-//     char key;
-//     int seg;
-
-// }
 
 int main() {
     int num_procesos;
     queue <Lote> lotes;
     Lote loteAct;
-    cout << "Número de proceos: ";
+    cout << "Numero de proceos: ";
     cin >> num_procesos;
 
     vector<Proceso> procesos = generar_procesos(num_procesos);
@@ -186,12 +208,8 @@ int main() {
         lotes.push(loteAct);
     }
 
-    cout<<"Lotes "<<lotes.size();
-
-    // while (!procesos.empty()) 
-    // {
-    //     ejecutar_procesos(procesos);
-    // }
+    cout<<"Lotes "<<lotes.size()<<endl;
+    mostrar(procesos, lotes);
 
     return 0;
 }
