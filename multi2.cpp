@@ -14,7 +14,7 @@ using namespace std;
 class Proceso {
 public:
     int id;
-    int tiempo_max, tiempo_trans;
+    int tiempo_max, tiempo_trans, porcentaje;
     char operacion;
     int operandos[2];
     string resultado;
@@ -25,6 +25,7 @@ public:
         operandos[1] = op2;
         estado = "En espera";
         tiempo_trans = 0;
+        porcentaje = 0;
     }
 
     void ejecutar() {
@@ -91,8 +92,7 @@ void pausa() {
 
 void mostrar(queue<Lote>& lotes) {
     char key;
-    int aux = 0, seg, global = 0;
-    float porcentaje;
+    int aux, seg, global = 0, transcurrido = 0;
     vector <Proceso> termi;
 
     while (!lotes.empty()) 
@@ -107,9 +107,12 @@ void mostrar(queue<Lote>& lotes) {
         for (size_t m = 0; m < procesos_actuales.size(); m++) 
         {
             int tam = procesos_actuales.size();
+            aux = 0;
+            transcurrido = 0;
             Proceso& proceso = procesos_actuales[m]; // Referencia al proceso
             proceso.ejecutar(); // Ejecutar el proceso
             cout<<endl;
+
             //For que itera sobre los procesos
             cout<<left<<setw(15)<<"Numero"<<setw(15)<<"Tiempo"<<setw(15)<<"Tiempo transcurrido"<<"\t\t\t Lotes restantes: "<<lotes.size()<<endl;
             for(int i = 0; i < tam; i++)
@@ -128,19 +131,20 @@ void mostrar(queue<Lote>& lotes) {
 
             // Simulando tiempo de ejecución
             if(proceso.tiempo_trans != 0)
-                aux = proceso.tiempo_trans; 
+                aux = proceso.porcentaje; 
             
             seg = proceso.tiempo_max * 10;// Ajustar el tiempo para Sleep
             //global += proceso.tiempo_max;
-            cout<<"seg"<<seg<<endl;
+            //cout<<"seg "<<seg<<endl;
             for (int i = aux; i <= 100; ++i) 
             {
                 key = '\0';
                 cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ') << "] " << i << "%";
                 cout.flush();
                 Sleep(seg); // Simular tiempo de ejecución
-                global += seg/10;
-                
+                global = global + (seg/10);
+                transcurrido = transcurrido + (seg/10);         
+                //cout<<"Tans "<<transcurrido<<endl;
                 if (kbhit()) 
                 {
                     cout << "\nPresiona 'I' para interrupcion, 'P' para pausa, 'E' para terminar con error: ";
@@ -149,7 +153,8 @@ void mostrar(queue<Lote>& lotes) {
                     if (key == 'I') 
                     {
                         cout << "Proceso " << proceso.id << " interrumpido.\n";
-                        proceso.tiempo_trans = i;
+                        proceso.porcentaje = i;
+                        proceso.tiempo_trans = transcurrido / 100;
                         procesos_actuales.push_back(proceso);// Mover el proceso interrumpido al final
                         procesos_actuales.erase(procesos_actuales.begin() + m);
                         m--; // Ajustar índice después de eliminar
@@ -167,13 +172,14 @@ void mostrar(queue<Lote>& lotes) {
                     }
                 }
             }
+
             if (key != 'I') 
             {
                 termi.push_back(proceso);
                 procesos_actuales.erase(procesos_actuales.begin());
                 m--;
             }
-            //system("cls");
+            system("cls");
             
         }
 
