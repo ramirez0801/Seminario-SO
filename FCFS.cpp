@@ -11,22 +11,23 @@
 
 using namespace std;
 
-class Proceso {
+class Proceso { //Clase del proceso
 public:
     int id;
-    int tiempo_max, tiempo_trans, porcentaje;
+    int tiempo_max, tiempo_trans, porcentaje, bloqueado;
     char operacion;
     int operandos[2];
     string resultado;
     string estado;
 
-    Proceso(int id, int tiempo_max, char operacion, int op1, int op2)
+    Proceso(int id, int tiempo_max, char operacion, int op1, int op2) //Inicializacion
         : id(id), tiempo_max(tiempo_max), operacion(operacion) {
         operandos[0] = op1;
         operandos[1] = op2;
         estado = "Nuevo"; // Estado inicial
         tiempo_trans = 0;
         porcentaje = 0;
+        bloqueado = 0;
     }
 
     void ejecutar() {
@@ -95,6 +96,7 @@ void mostrar(vector<Proceso>& procesos) {
     char key;
     int aux, seg, global = 0, transcurrido = 0, r = 0;
     vector<Proceso> termi;
+    vector<Proceso> bloqueado;
     queue<Proceso> memoria;
 
     while (!procesos.empty()) {
@@ -104,32 +106,33 @@ void mostrar(vector<Proceso>& procesos) {
 
         if(procesos.empty())
             continue;
-        else
-            for(r = r; memoria.size() < 5; r++)
+        else if(memoria.size() != 5)
+            for(r = r; memoria.size() < 5; r++) //Mantem: Revisar r
             {
+                procesos[r].estado = "Listo";
                 memoria.push(procesos[r]);
             }
 
-
         vector<Proceso> procesos_actuales = procesos;  // Copia de los procesos
+        Proceso& proceso = memoria.front();  // Referencia al proceso
+
 
         // Ejecutar todos los procesos en el lote actual
-        for (size_t m = 0; m < procesos_actuales.size(); m++) {
+        //for (size_t m = 0; m < procesos_actuales.size(); m++) {
             int tam = procesos_actuales.size();
             aux = 0;
             transcurrido = 0;
-            Proceso& proceso = procesos_actuales[m];  // Referencia al proceso
-
-            // Cambia el estado del proceso a 'Listo' antes de ejecutarlo
-            proceso.estado = "Listo";
-
+            
             // Mostrar información antes de ejecutar
             cout << endl;
-            cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"
+            cout << left << setw(15) << "Numero" 
+                 << setw(15) << "Tiempo"
                  << setw(15) << "Estado"
                  << endl;
-            for (int i = 0; i < tam; i++) {
-                cout << left << setw(15) << procesos_actuales[i].id
+            
+            queue<Proceso> mem_copy = memoria;
+            for (int i = 0; i < memoria.size(); i++) {
+                cout << left << setw(15) << mem_copy.front().id
                      << setw(15) << procesos_actuales[i].tiempo_max
                      << setw(15) << procesos_actuales[i].estado << endl;
             }
@@ -143,14 +146,14 @@ void mostrar(vector<Proceso>& procesos) {
             }
             cout << endl;
 
-            cout << "Ejecutando Proceso " << proceso.id << endl;
+            cout << "Ejecutando Proceso: " << proceso.id << endl;
             proceso.ejecutar();  // Ejecutar el proceso
 
-            // Simulando tiempo de ejecución
             if (proceso.tiempo_trans != 0)
                 aux = proceso.porcentaje;
 
             seg = proceso.tiempo_max * 10;  // Ajustar el tiempo para Sleep
+            // Simulando tiempo de ejecución
             for (int i = aux; i <= 100; ++i) {
                 key = '\0';
                 cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ')<< "] " << i << "%";
@@ -164,16 +167,25 @@ void mostrar(vector<Proceso>& procesos) {
                     cin >> key;
                     key = toupper(key);
                     if (key == 'I') {
-                        cout << "Proceso " << proceso.id << " interrumpido.\n";
+                        cout << "Proceso " << proceso.id << " interrumpido, pasa a estado bloqueado.\n";
                         proceso.porcentaje = i;
                         proceso.tiempo_trans = transcurrido / 100;
                         proceso.estado = "Interrumpido";  // Cambiar estado a interrumpido
-                        procesos_actuales.push_back(proceso);  // Mover el proceso interrumpido al final
-                        procesos_actuales.erase(procesos_actuales.begin() + m);
-                        m--;  // Ajustar índice después de eliminar
+                       // procesos_actuales.erase(procesos_actuales.begin() + m);
+                        for(int i = 0; i <= 100; i++)
+                        {
+                            cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ')<< "] " << i << "%";
+                            cout.flush();
+                            Sleep(70);
+                        }
+                        proceso.bloqueado += 7;
+                        proceso.estado = "Bloqueado";
+                        memoria.push(proceso);
+                        bloqueado.push_back(proceso);
+                        //m--;  // Ajustar índice después de eliminar
                         break;  // Salir para volver a ejecutar el lote
                     } else if (key == 'P') {
-                        proceso.estado = "Bloqueado";  // Cambiar estado a bloqueado
+                        proceso.estado = "Pausa";  // Cambiar estado a bloqueado
                         pausa();
                         proceso.estado = "Ejecución";  // Regresar a ejecución
                     } else if (key == 'E') {
@@ -183,13 +195,13 @@ void mostrar(vector<Proceso>& procesos) {
                         break;
                     }
                 }
-            }
+            //}
 
             if (key != 'I') {
                 proceso.estado = "Terminado";  // Estado final si no fue interrumpido
                 termi.push_back(proceso);
                 procesos_actuales.erase(procesos_actuales.begin());
-                m--;
+                //m--;
             }
             system("cls");
         }
