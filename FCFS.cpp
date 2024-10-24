@@ -98,53 +98,61 @@ void mostrar(vector<Proceso>& procesos) {
     vector<Proceso> termi;
     vector<Proceso> bloqueado;
     queue<Proceso> memoria;
-
-    while (!procesos.empty()) {
-        system("cls");
+    while (!procesos.empty())
+    {
+        //system("cls");
         //Lote lo = lotes.front();
         //lotes.pop();
-
+        
         if(procesos.empty())
             continue;
         else if(memoria.size() != 5)
-            for(r = r; memoria.size() < 5; r++) //Mantem: Revisar r
+            for(r = 0; r < procesos.size(); r++) //Mantem: Revisar r
             {
+                cout<<"Entra\n";
                 procesos[r].estado = "Listo";
                 memoria.push(procesos[r]);
+                //procesos.erase(procesos.begin() + r);
+                r--;
+                if(memoria.size() == 5)
+                    break;
             }
+        
 
-        vector<Proceso> procesos_actuales = procesos;  // Copia de los procesos
-        Proceso& proceso = memoria.front();  // Referencia al proceso
+        for(auto &p : procesos)
+            cout<<"Proceso: "<<p.id<<endl;
 
+        //vector<Proceso> procesos_actuales = procesos;  // Copia de los procesos
+       
 
         // Ejecutar todos los procesos en el lote actual
         //for (size_t m = 0; m < procesos_actuales.size(); m++) {
-            int tam = procesos_actuales.size();
+            //int tam = procesos_actuales.size();
             aux = 0;
             transcurrido = 0;
             
             // Mostrar información antes de ejecutar
             cout << endl;
-            cout << left << setw(15) << "Numero" 
-                 << setw(15) << "Tiempo"
-                 << setw(15) << "Estado"
-                 << endl;
+            cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< endl;
             
             queue<Proceso> mem_copy = memoria;
-            for (int i = 0; i < memoria.size(); i++) {
-                cout << left << setw(15) << mem_copy.front().id
-                     << setw(15) << procesos_actuales[i].tiempo_max
-                     << setw(15) << procesos_actuales[i].estado << endl;
+            cout<<"Tam: "<<mem_copy.size()<<endl;
+            for (int i = 0; i < mem_copy.size(); i++) 
+            {
+                cout << left << setw(15) << mem_copy.front().id<< setw(15) << mem_copy.front().tiempo_max<< setw(15) << mem_copy.front().estado << endl;
+                mem_copy.pop();
             }
+
             cout << "\nTerminados: " << endl;
-            cout << left << setw(15) << "Numero" << setw(15) << "Operacion"
-                 << setw(15) << "Resultado"
-                 << "\t\t\tContador global: " << global / 100 << endl;
-            for (int j = 0; j < termi.size(); j++) {
-                cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion
-                     << setw(15) << termi[j].resultado << endl;
+            cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Resultado" << "\t\t\tContador global: " << global / 100 << endl;
+            for (int j = 0; j < termi.size(); j++) 
+            {
+                cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion<< setw(15) << termi[j].resultado << endl;
             }
             cout << endl;
+
+            Proceso proceso = memoria.front();  // Referencia al proceso
+            memoria.pop();
 
             cout << "Ejecutando Proceso: " << proceso.id << endl;
             proceso.ejecutar();  // Ejecutar el proceso
@@ -152,9 +160,12 @@ void mostrar(vector<Proceso>& procesos) {
             if (proceso.tiempo_trans != 0)
                 aux = proceso.porcentaje;
 
+            cout<<"Tiempo "<<proceso.tiempo_max<<endl;
             seg = proceso.tiempo_max * 10;  // Ajustar el tiempo para Sleep
+            
             // Simulando tiempo de ejecución
-            for (int i = aux; i <= 100; ++i) {
+            for (int i = aux; i <= 100; ++i) 
+            {
                 key = '\0';
                 cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ')<< "] " << i << "%";
                 cout.flush();
@@ -162,11 +173,13 @@ void mostrar(vector<Proceso>& procesos) {
                 global = global + (seg / 10);
                 transcurrido = transcurrido + (seg / 10);
 
-                if (kbhit()) {
+                if (kbhit()) 
+                {
                     //cout << "\nPresiona 'I' para interrupción, 'P' para pausa, 'E' para terminar con error: ";
                     cin >> key;
                     key = toupper(key);
-                    if (key == 'I') {
+                    if (key == 'I') 
+                    {
                         cout << "Proceso " << proceso.id << " interrumpido, pasa a estado bloqueado.\n";
                         proceso.porcentaje = i;
                         proceso.tiempo_trans = transcurrido / 100;
@@ -195,28 +208,25 @@ void mostrar(vector<Proceso>& procesos) {
                         break;
                     }
                 }
-            //}
-
-            if (key != 'I') {
-                proceso.estado = "Terminado";  // Estado final si no fue interrumpido
-                termi.push_back(proceso);
-                procesos_actuales.erase(procesos_actuales.begin());
-                //m--;
             }
-            system("cls");
+            
+           // system("cls");
+        if (key != 'I') 
+        {
+            proceso.estado = "Terminado";  // Estado final si no fue interrumpido
+            termi.push_back(proceso);
+            cout<<"Guardado\n";
+            //procesos_actuales.erase(procesos_actuales.begin());
+            //m--;
         }
+    }  
 
-        cout << "\nLote completado con los procesos restantes.\n";
-        cout << "Terminados: " << endl;
-        cout << left << setw(15) << "Numero" << setw(15) << "Operacion"
-             << setw(15) << "Resultado"
-             << "\t\t\tContador global: " << global / 100 << endl;
-        for (int j = 0; j < termi.size(); j++) {
-            cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion
-                 << setw(15) << termi[j].resultado << endl;
-        }
-        cout << endl;
+    cout << "\nTerminados: "<<termi.size() << endl;
+    cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Resultado"<< "\t\t\tContador global: " << global / 100 << endl;
+    for (int j = 0; j < termi.size(); j++) {
+        cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion<< setw(15) << termi[j].resultado << endl;
     }
+    cout << endl;
     cout << "Ejecutado con éxito" << endl;
     getch();
 }
@@ -232,16 +242,16 @@ int main()
 
     vector<Proceso> procesos = generar_procesos(num_procesos);
 
-    for (int i = 0; i < num_procesos; i++) {
-        if (loteAct.pro.size() == 5) {
-            lotes.push(loteAct);
-            loteAct.pro.clear();
-        }
-        loteAct.pro.push_back(procesos[i]);
-    }
-    if (!loteAct.pro.empty()) {
-        lotes.push(loteAct);
-    }
+    // for (int i = 0; i < num_procesos; i++) {
+    //     if (loteAct.pro.size() == 5) {
+    //         lotes.push(loteAct);
+    //         loteAct.pro.clear();
+    //     }
+    //     loteAct.pro.push_back(procesos[i]);
+    // }
+    // if (!loteAct.pro.empty()) {
+    //     lotes.push(loteAct);
+    // }
 
     mostrar(procesos);  // Pasar la cola de lotes a la función
 
