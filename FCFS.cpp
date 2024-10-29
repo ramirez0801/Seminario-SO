@@ -14,7 +14,7 @@ using namespace std;
 class Proceso { //Clase del proceso
 public:
     int id;
-    int tiempo_max, tiempo_trans, porcentaje, bloqueado;
+    int tiempo_max, tiempo_trans, porcentaje, bloqueado, tLlegada, tSalida, tRtrn, tResp, tEspera, tServicio;
     char operacion;
     int operandos[2];
     string resultado;
@@ -28,6 +28,12 @@ public:
         tiempo_trans = 0;
         porcentaje = 0;
         bloqueado = 0;
+        tLlegada = 0;
+        tSalida = 0;
+        tRtrn = 0;
+        tResp = 0;
+        tEspera = 0;
+        tServicio = 0;
     }
 
     void ejecutar() {
@@ -84,7 +90,7 @@ vector<Proceso> generar_procesos(int num_procesos) {
 }
 
 void pausa() {
-    std::cout << "Ejecución pausada. Presiona 'C' para continuar.\n";
+    std::cout << "\nEjecucion pausada. Presiona 'C' para continuar.\n";
     while (true) {
         if (cin.get() == 'C' || cin.get() == 'c') {
             break;
@@ -98,34 +104,34 @@ void mostrar(vector<Proceso>& procesos) {
     vector<Proceso> termi;
     vector<Proceso> bloqueado;
     queue<Proceso> memoria;
-    while (!procesos.empty())
+    while (!procesos.empty() || !memoria.empty())
     {
         //system("cls");
         //Lote lo = lotes.front();
         //lotes.pop();
         
-        if(procesos.empty())
-            continue;
-        else if(memoria.size() != 5)
-            for(r = 0; r < procesos.size(); r++) //Mantem: Revisar r
+        if(!procesos.empty() && memoria.size() != 5)
+        {
+            r = 0;
+            while(r < procesos.size()) //Mantem: Revisar r
             {
                 cout<<"Entra\n";
                 procesos[r].estado = "Listo";
+                procesos[r].tLlegada = global/100; //Tiempo llegada***
                 memoria.push(procesos[r]);
-                //procesos.erase(procesos.begin() + r);
-                r--;
+                cout<<"Tamano de memoria: "<<memoria.size()<<endl;
+                procesos.erase(procesos.begin() + r);
+                cout<<"Tamano de procesos: "<<procesos.size()<<endl;
                 if(memoria.size() == 5)
+                {
+                    cout<<"Memoria llena\n";
                     break;
+                }
             }
-        
-
-        for(auto &p : procesos)
-            cout<<"Proceso: "<<p.id<<endl;
+        }
 
         //vector<Proceso> procesos_actuales = procesos;  // Copia de los procesos
-       
-
-        // Ejecutar todos los procesos en el lote actual
+        // Ejecutar todos los procesos
         //for (size_t m = 0; m < procesos_actuales.size(); m++) {
             //int tam = procesos_actuales.size();
             aux = 0;
@@ -134,10 +140,8 @@ void mostrar(vector<Proceso>& procesos) {
             // Mostrar información antes de ejecutar
             cout << endl;
             cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< endl;
-            
             queue<Proceso> mem_copy = memoria;
-            cout<<"Tam: "<<mem_copy.size()<<endl;
-            for (int i = 0; i < mem_copy.size(); i++) 
+            while(!mem_copy.empty())
             {
                 cout << left << setw(15) << mem_copy.front().id<< setw(15) << mem_copy.front().tiempo_max<< setw(15) << mem_copy.front().estado << endl;
                 mem_copy.pop();
@@ -160,9 +164,9 @@ void mostrar(vector<Proceso>& procesos) {
             if (proceso.tiempo_trans != 0)
                 aux = proceso.porcentaje;
 
-            cout<<"Tiempo "<<proceso.tiempo_max<<endl;
+            cout<<"Tiempo: "<<proceso.tiempo_max<<endl;
             seg = proceso.tiempo_max * 10;  // Ajustar el tiempo para Sleep
-            
+            proceso.tResp = global; //Tiempo respuesta***
             // Simulando tiempo de ejecución
             for (int i = aux; i <= 100; ++i) 
             {
@@ -170,17 +174,17 @@ void mostrar(vector<Proceso>& procesos) {
                 cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ')<< "] " << i << "%";
                 cout.flush();
                 Sleep(seg);  // Simular tiempo de ejecución
-                global = global + (seg / 10);
+                global = global + (seg / 10);//Tiempo global***
                 transcurrido = transcurrido + (seg / 10);
 
                 if (kbhit()) 
                 {
                     //cout << "\nPresiona 'I' para interrupción, 'P' para pausa, 'E' para terminar con error: ";
-                    cin >> key;
+                    key = getch();
                     key = toupper(key);
                     if (key == 'I') 
                     {
-                        cout << "Proceso " << proceso.id << " interrumpido, pasa a estado bloqueado.\n";
+                        cout << "\nProceso " << proceso.id << " interrumpido, pasa a estado bloqueado.\n";
                         proceso.porcentaje = i;
                         proceso.tiempo_trans = transcurrido / 100;
                         proceso.estado = "Interrumpido";  // Cambiar estado a interrumpido
@@ -190,13 +194,14 @@ void mostrar(vector<Proceso>& procesos) {
                             cout << "\rProgreso: [" << string(i, '=') << string(100 - i, ' ')<< "] " << i << "%";
                             cout.flush();
                             Sleep(70);
+                            global = global + (seg / 10);
                         }
                         proceso.bloqueado += 7;
                         proceso.estado = "Bloqueado";
                         memoria.push(proceso);
                         bloqueado.push_back(proceso);
                         //m--;  // Ajustar índice después de eliminar
-                        break;  // Salir para volver a ejecutar el lote
+                        break;  // Salir para volver a ejecutar
                     } else if (key == 'P') {
                         proceso.estado = "Pausa";  // Cambiar estado a bloqueado
                         pausa();
@@ -213,21 +218,31 @@ void mostrar(vector<Proceso>& procesos) {
            // system("cls");
         if (key != 'I') 
         {
+            proceso.tServicio = proceso.tiempo_max;
             proceso.estado = "Terminado";  // Estado final si no fue interrumpido
+            proceso.tSalida = global/100; //Tiempo de salida***
+            proceso.tRtrn = proceso.tSalida - proceso.tLlegada; //Tiempo de retorno***
+            proceso.tEspera = proceso.tRtrn - proceso.tServicio;
+            cout<<"\nretrono: "<<proceso.tRtrn<<endl;
             termi.push_back(proceso);
-            cout<<"Guardado\n";
+            cout<<"\nGuardado\n";
             //procesos_actuales.erase(procesos_actuales.begin());
             //m--;
         }
     }  
 
     cout << "\nTerminados: "<<termi.size() << endl;
-    cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Resultado"<< "\t\t\tContador global: " << global / 100 << endl;
-    for (int j = 0; j < termi.size(); j++) {
-        cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion<< setw(15) << termi[j].resultado << endl;
+    cout << left << setw(15) << "Numero" << setw(15) <<"Tiempo de llegada" <<setw(15) <<"Tiempo de salida"<<setw(15) 
+    <<"Tiempo de retorno"<<setw(15) <<"Tiempo de respuesta"<<setw(15) <<"Tiempo de espera"<<setw(15) 
+    <<"Tiempo de servicio"<<setw(15) << "Resultado"<< "\t\t\tContador global: " << global / 100 << endl;
+    for (int j = 0; j < termi.size(); j++) 
+    {
+        cout << setw(15) << termi[j].id << setw(15) << termi[j].tLlegada<< setw(15) <<termi[j].tSalida<< setw(15) 
+        <<termi[j].tRtrn<< setw(15) <<termi[r].tResp<< setw(15) <<termi[j].tEspera<< setw(15) 
+        <<termi[j].tServicio<< setw(15) << termi[j].resultado << endl;
     }
     cout << endl;
-    cout << "Ejecutado con éxito" << endl;
+    cout << "Ejecutado con exito" << endl;
     getch();
 }
 
