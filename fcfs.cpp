@@ -196,7 +196,6 @@ void mostrar(vector<Proceso>& procesos) {
                         proceso.estado = "Interrumpido";  // Cambiar estado a interrumpido
                        // procesos_actuales.erase(procesos_actuales.begin() + m);
                         proceso.estado = "Bloqueado";
-                        memoria.push(proceso);
                         bloqueado.push_back(proceso);
                         //m--;  // Ajustar índice después de eliminar
                         break;  // Salir para volver a ejecutar
@@ -212,20 +211,22 @@ void mostrar(vector<Proceso>& procesos) {
                     }
                 }
 
-                if(bloqueado.size() != 0)
-                    for(int l = 0; i<bloqueado.size(); i++)
-                    {
-                        bloqueado[l].contBloq += global/100;
-                        if(bloqueado[i].contBloq == 7)
-                        {
-                            bloqueado.erase(bloqueado.begin());
+                if (!bloqueado.empty()) 
+                {
+                    for (int i = 0; i < bloqueado.size(); i++) {
+                        // Los procesos bloqueados avanzan un poco con cada ciclo de progreso
+                        bloqueado[i].contBloq++;  // Incrementar el tiempo de bloqueo por 1 segundo
+                        if (bloqueado[i].contBloq >= 7) {  // Si el proceso ha estado bloqueado durante 7 segundos
+                            // Mover proceso bloqueado a memoria
+                            bloqueado[i].estado = "Listo";
+                            memoria.push(bloqueado[i]);
+                            bloqueado.erase(bloqueado.begin() + i);
+                            i--;  // Decrementar el índice ya que se ha eliminado un elemento
                         }
                     }
+                }
             }
-            
 
-            
-        
            // system("cls");
             if (key != 'I') 
             {
@@ -243,14 +244,14 @@ void mostrar(vector<Proceso>& procesos) {
     }  
 
     cout << "\nTerminados: "<<termi.size() << endl;
-    cout << left << setw(15) << "Numero" << setw(15) <<"Llegada" <<setw(15) <<"Salida"<<setw(15) 
-    <<"Retorno"<<setw(15) <<"Respuesta"<<setw(15) <<"Espera"<<setw(15) 
-    <<"Servicio"<<setw(15) << "Resultado"<< "\t\t\tContador global: " << global / 100 << endl;
-    for (int j = 0; j < termi.size(); j++) 
+    cout << left << setw(15) << "Numero" << setw(18) <<"Llegada" <<setw(18) <<"Salida"<<setw(18)
+    <<"Retorno"<<setw(18) <<"Respuesta"<<setw(18) <<"Espera"<<setw(18)
+    <<"Servicio"<<setw(18) << "Resultado"<< "\tContador global: " << global / 100 << endl;
+    for (int j = 0; j < termi.size(); j++)
     {
-        cout << setw(15) << termi[j].id << setw(15) << termi[j].tLlegada<< setw(15) <<termi[j].tSalida<< setw(15) 
-        <<termi[j].tRtrn<< setw(15) <<termi[j].tResp<< setw(15) <<termi[j].tEspera<< setw(15) 
-        <<termi[j].tServicio<< setw(15) << termi[j].resultado << endl;
+        cout << setw(15) << termi[j].id << setw(18) << termi[j].tLlegada<< setw(18) <<termi[j].tSalida<< setw(18)
+        <<termi[j].tRtrn<< setw(18) <<termi[j].tResp<< setw(18) <<termi[j].tEspera<< setw(18)
+        <<termi[j].tServicio<< setw(18) << termi[j].resultado << endl;
     }
     cout << endl;
     cout << "Ejecutado con exito" << endl;
