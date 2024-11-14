@@ -112,16 +112,18 @@ void pausa() {
 
 void mostrar(vector<Proceso>& procesos) {
     char key;
-    int aux, seg, global = 0, transcurrido = 0, r = 0;
+    int aux, seg, global = 0, transcurrido = 0, r = 0, totalPro = procesos.size();
     vector<Proceso> termi;
     vector<Proceso> bloqueado;
     queue<Proceso> memoria;
     Proceso proceso;
 
+
+
     while (!procesos.empty() || !memoria.empty() || !bloqueado.empty())
     {
-        //system("cls");
-
+        //system("cls"); 
+        
         if(!procesos.empty() && memoria.size() + bloqueado.size() != 5)
         {
             r = 0;
@@ -130,12 +132,12 @@ void mostrar(vector<Proceso>& procesos) {
                 procesos[r].estado = "Listo";
                 procesos[r].tLlegada = global; //Tiempo llegada***
                 memoria.push(procesos[r]);
-
+                
                 procesos.erase(procesos.begin() + r);
-
+                
                 if(memoria.size() == 5)
                 {
-                    //cout<<"Memoria llena\n";
+                    cout<<"Memoria llena\n";
                     break;
                 }
             }
@@ -144,95 +146,33 @@ void mostrar(vector<Proceso>& procesos) {
         aux = 0;
         transcurrido = 0;
 
-<<<<<<< HEAD
+        // Simulando tiempo de ejecución
         if(!memoria.empty())
         {
+            cout<<"Entra "<<memoria.size()<<endl;
             proceso = memoria.front();  // Referencia al proceso
             memoria.pop();
 
             proceso.ejecutar();  // Ejecutar el proceso
             if (proceso.tiempo_trans != 0)
                 aux = proceso.tiempo_trans;
-            proceso.tResp = global- proceso.tLlegada; //Tiempo respuesta***
-        }
-            
+            proceso.tResp = global - proceso.tLlegada; //Tiempo respuesta***
 
-       
-
-        //seg = proceso.tiempo_max * 10;  // Ajustar el tiempo para Sleep
-        // Simulando tiempo de ejecución
-        if(!memoria.empty())
-        {
             for (int i = aux; i <= proceso.tiempo_max; ++i) 
             {
 
                 key = '\0';
                 Sleep(1000);  // Simular tiempo de ejecución
-                system("cls");
+                //system("cls");
+
                 cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< setw(15) << "Transcurido"<< endl;
                 queue<Proceso> mem_copy = memoria;
                 while(!mem_copy.empty())
-=======
-        Proceso proceso = memoria.front();  // Referencia al proceso
-        memoria.pop();
-
-        proceso.ejecutar();  // Ejecutar el proceso
-
-        if (proceso.tiempo_trans != 0)
-            aux = proceso.tiempo_trans;
-
-        seg = proceso.tiempo_max * 10;  // Ajustar el tiempo para Sleep
-        proceso.tResp = global- proceso.tLlegada; //Tiempo respuesta***
-        // Simulando tiempo de ejecución
-        for (int i = aux; i <= proceso.tiempo_max; ++i)
-        {
-            Sleep(1000);  // Simular tiempo de ejecución
-            system("cls");
-            key = '\0';
-            cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< setw(15) << "Transcurrido" << endl;
-            queue<Proceso> mem_copy = memoria;
-            while(!mem_copy.empty())
-            {
-                cout << left << setw(15) << mem_copy.front().id<< setw(15) << mem_copy.front().tiempo_max<< setw(15) << mem_copy.front().estado << setw(15) << mem_copy.front().tiempo_trans << endl;
-                mem_copy.pop();
-            }
-
-            cout << "\nTerminados: " << endl;
-            cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Resultado" << "\t\t\tContador global: " << global << endl;
-            for (int j = 0; j < termi.size(); j++)
-            {
-                cout << setw(15) << termi[j].id << setw(15) << termi[j].operacion<< setw(15) << termi[j].resultado << endl;
-            }
-            cout << endl;
-            cout<<"Proceso en ejecucion: \n";
-            cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Tiempo maximo"<< endl;
-            cout << left << setw(15) << proceso.id << setw(15) << proceso.operacion<< setw(15) <<proceso.tiempo_max << endl;
-
-            cout<<"Tiempo transcurrido: "<<proceso.tiempo_trans<<endl;
-            cout<<"Tiempo: "<<i;
-
-            cout<<"\n\nBloqueados: \n";
-            cout<<left<< setw(15) << "id"<<setw(15)<< "Tiempo"<<endl;
-            for (int b = 0; b < bloqueado.size(); b++)
-            {
-                cout<<setw(15)<<bloqueado[b].id<<setw(15)<<bloqueado[b].contBloq<<endl;
-            }
-
-            global++;//Tiempo global***
-            transcurrido++;
-
-            if (kbhit())
-            {
-                key = getch();
-                key = toupper(key);
-                if (key == 'I')
->>>>>>> 66d166210a9af09bf2ce014ebadb45d745daf499
                 {
                     cout << left << setw(15) << mem_copy.front().id<< setw(15) << mem_copy.front().tiempo_max<< setw(15) << mem_copy.front().estado << setw(15) <<mem_copy.front().tiempo_trans << endl;
                     mem_copy.pop();
                 }
 
-<<<<<<< HEAD
                 cout << "\nTerminados: " << endl;
                 cout << left << setw(15) << "Numero" << setw(15) << "Operacion"<< setw(15) << "Resultado" << "\t\t\tContador global: " << global << endl;
                 for (int j = 0; j < termi.size(); j++) 
@@ -278,26 +218,6 @@ void mostrar(vector<Proceso>& procesos) {
                         break;
                     }
                 }
-=======
-            if (!bloqueado.empty())
-            {
-
-                for (int j = 0; j < bloqueado.size(); j++)
-                {
-                    bloqueado[j].contBloq++;  // Incrementar el tiempo de bloqueo por 1 segundo
-                    if (bloqueado[j].contBloq >= 7)
-                    {
-                        // Mover proceso bloqueado a memoria
-                        bloqueado[j].estado = "Listo";
-                        memoria.push(bloqueado[j]);
-                        bloqueado[j].contBloq =0;
-                        bloqueado.erase(bloqueado.begin() + j);
-                        j--;  // Decrementar el índice
-                    }
-                }
-            }
-
->>>>>>> 66d166210a9af09bf2ce014ebadb45d745daf499
 
                 if (!bloqueado.empty()) 
                 {
@@ -319,13 +239,15 @@ void mostrar(vector<Proceso>& procesos) {
 
             }
         }
+
         else if(!bloqueado.empty())
         {
-            for(int i = 0; i < 7; i++)
+            while(memoria.empty())
             {
                 key = '\0';
                 Sleep(1000);  // Simular tiempo de ejecución
-                system("cls");
+                //system("cls");
+                global++;//Tiempo global***
 
                 cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< setw(15) << "Transcurido"<< endl;
                 cout<<"No hay procesos en listo\n";
@@ -344,7 +266,7 @@ void mostrar(vector<Proceso>& procesos) {
                     cout<<setw(15)<<bloqueado[b].id<<setw(15)<<bloqueado[b].contBloq<<endl;
                 }
 
-                 if (!bloqueado.empty()) 
+                if (!bloqueado.empty()) 
                 {
                     for (int j = 0; j < bloqueado.size(); j++) 
                     {
@@ -354,22 +276,19 @@ void mostrar(vector<Proceso>& procesos) {
                             // Mover proceso bloqueado a memoria
                             bloqueado[j].estado = "Listo";
                             bloqueado[j].contBloq = 0;
-                            memoria.push(bloqueado[j]);
+                            memoria.push(bloqueado[j]); cout<<"Guardado "<<memoria.size() << endl;
                             bloqueado.erase(bloqueado.begin() + j);
                             j--;  // Decrementar el índice
                         }
                     }
                 }
 
-                if(!memoria.empty())
-                    break;
-
+                
             }
         }
         
-
         // system("cls");
-        if (key != 'I')
+        if (key != 'I') 
         {
             proceso.tServicio = proceso.tiempo_max;
             proceso.estado = "Terminado";  // Estado final si no fue interrumpido
@@ -378,7 +297,7 @@ void mostrar(vector<Proceso>& procesos) {
             proceso.tEspera = proceso.tRtrn - proceso.tServicio;
             termi.push_back(proceso);
         }
-    }
+    }  
 
     cout << "\nTerminados: "<<termi.size() << endl;
 
@@ -396,7 +315,7 @@ void mostrar(vector<Proceso>& procesos) {
     getch();
 }
 
-int main()
+int main() 
 {
     int num_procesos;
 
