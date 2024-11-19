@@ -156,12 +156,13 @@ void mostrar(vector<Proceso>& procesos) {
             memoria.pop();
 
             proceso.ejecutar();  // Ejecutar el proceso
+        //} if
             if (proceso.tiempo_trans != 0)
                 aux = proceso.tiempo_trans;
 
             proceso.tResp = global - proceso.tLlegada; //Tiempo respuesta***
 
-            for (int i = aux; i <= proceso.tiempo_max; i++) 
+            for (int i = aux; i <= proceso.tiempo_max; i++) //while(!memoria.empty() || !bloqueado.empty())
             {
 
                 key = '\0';
@@ -169,6 +170,7 @@ void mostrar(vector<Proceso>& procesos) {
                 //system("cls");
 
                 cout << left << setw(15) << "Numero" << setw(15) << "Tiempo"<< setw(15) << "Estado"<< setw(15) << "Transcurido"<< endl;
+                //if(!memoria.empty())
                 queue<Proceso> mem_copy = memoria;
                 while(!mem_copy.empty())
                 {
