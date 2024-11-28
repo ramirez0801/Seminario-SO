@@ -21,6 +21,7 @@ public:
     int operandos[2];
     string resultado;
     string estado;
+    bool tCalcu;
 
     Proceso() : id(0), tiempo_max(0), operacion('+') 
     { 
@@ -53,6 +54,7 @@ public:
         tServicio = 0;
         contBloq = 0;
         quantum = 0;
+        tCalcu = false;
     }
 
     void ejecutar() {
@@ -142,9 +144,11 @@ void mostrar(vector<Proceso>& procesos)
         }
 
         // Mover procesos bloqueados de vuelta a memoria si cumplen el tiempo de bloqueo
-        for (int i = 0; i < bloqueado.size(); i++) {
+        for (int i = 0; i < bloqueado.size(); i++) 
+        {
             bloqueado[i].contBloq++;
-            if (bloqueado[i].contBloq >= 7 && (memoria.size() + procEjecucion.size()) < 5) {
+            if (bloqueado[i].contBloq >= 7 && (memoria.size() + procEjecucion.size()) < 5) 
+            {
                 bloqueado[i].estado = "Listo";
                 bloqueado[i].contBloq = 0;
                 memoria.push(bloqueado[i]);
@@ -154,88 +158,45 @@ void mostrar(vector<Proceso>& procesos)
         }
 
         // Si no hay procesos en ejecucion, toma el siguiente de memoria
-        if (procEjecucion.empty() && !memoria.empty()) {
+        if (procEjecucion.empty() && !memoria.empty())
+        {
             procEjecucion.push_back(memoria.front());
             memoria.pop();
             procEjecucion.front().estado = "Ejecucion";
             procEjecucion.front().ejecutar();
-            procEjecucion.front().tResp = global - procEjecucion.front().tLlegada;  // Tiempo de respuesta
         }
+   
+        // Mostrar estado actual del sistema
+        system("cls");
+        cout << "\nQuantum: " << quantum << endl;
+        cout << "Tiempo global: " << global << endl;
 
-        // Todos los procesos estan bloqueados
-        if (procEjecucion.empty() && memoria.empty() && !bloqueado.empty()) {
-            cout << "\nTodos los procesos estan bloqueados. Esperando desbloqueo..." << endl;
+        // **Mostrar contador de procesos en "Nuevos"**
+        cout << "Procesos en 'Nuevos': " << procesos.size() << endl;
 
-            // Incrementar tiempo de bloqueo de todos los procesos
-            for (int i = 0; i < bloqueado.size(); i++) {
-                bloqueado[i].contBloq++;
-                if (bloqueado[i].contBloq >= 7 && (memoria.size() + procEjecucion.size()) < 5) {
-                    bloqueado[i].estado = "Listo";
-                    bloqueado[i].contBloq = 0;
-                    memoria.push(bloqueado[i]);
-                    bloqueado.erase(bloqueado.begin() + i);
-                    i--;
-                }
+        if(!procEjecucion.empty())
+        {
+            if(!procEjecucion.front().tCalcu)
+            {
+                procEjecucion.front().tResp = global - procEjecucion.front().tLlegada;  // Tiempo de respuesta***
+                procEjecucion.front().tCalcu = true;
             }
-
-           
-            global++;
-            Sleep(1000);
-            continue;  // Volver a la siguiente iteracion del ciclo principal
-        }
-
-        // Simulacion de ejecucion del proceso actual
-        if (!procEjecucion.empty()) {
+            cout<<"Respuesta: "<<procEjecucion.front().tResp<<endl;
             Proceso& procesoActual = procEjecucion.front();
             procesoActual.tiempo_trans++;
             procesoActual.quantum++;
-            // Mostrar estado actual del sistema
-            system("cls");
-            cout << "Tiempo global: " << global << endl;
 
-            // **Mostrar contador de procesos en "Nuevos"**
-            cout << "\nProcesos en 'Nuevos': " << procesos.size() << endl;
-
-            cout << "Quantum: "<<quantum<<endl;
-
-            // **Imprimir proceso en ejecucion**
             cout << "\nProceso en ejecucion:" << endl;
             cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Operacion"
-                 << setw(15) << "Tiempo Max" << setw(15) << "Tiempo Trans" << endl;
+                << setw(15) << "Tiempo Max" << setw(15) << "Tiempo Trans" << endl;
             cout << setw(10) << procesoActual.id
-                 << setw(15) << procesoActual.estado
-                 << setw(15) << procesoActual.operacion
-                 << setw(15) << procesoActual.tiempo_max
-                 << setw(15) << procesoActual.tiempo_trans << endl;
-
-            // **Imprimir procesos en memoria**
-            cout << "\nProcesos en memoria:" << endl;
-            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Operacion" << setw(15) << "Transcurrido"<< endl;
-
-            // Procesos en la cola de memoria
-            queue<Proceso> memoriaAux = memoria;  // Copia auxiliar para iterar
-            while (!memoriaAux.empty()) {
-                Proceso temp = memoriaAux.front();
-                memoriaAux.pop();
-                cout << setw(10) << temp.id << setw(15) << temp.estado << setw(15) << temp.operacion <<setw(15) << temp.tiempo_trans << endl;
-            }
-
-            // **Imprimir procesos bloqueados**
-            cout << "\nProcesos bloqueados:" << endl;
-            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Tiempo Bloq" << endl;
-            for (const auto& proc : bloqueado) {
-                cout << setw(10) << proc.id << setw(15) << proc.estado << setw(15) << proc.contBloq << endl;
-            }
-
-            // **Imprimir procesos terminados**
-            cout << "\nProcesos terminados:" << endl;
-            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Resultado" << endl;
-            for (const auto& proc : termi) {
-                cout << setw(10) << proc.id << setw(15) << proc.estado << setw(15) << proc.resultado << endl;
-            }
-
-            // Manejar entrada de usuario
-            if (kbhit()) {
+                << setw(15) << procesoActual.estado
+                << setw(15) << procesoActual.operacion
+                << setw(15) << procesoActual.tiempo_max
+                << setw(15) << procesoActual.tiempo_trans << endl;
+            
+            if (kbhit()) 
+            {
                 key = toupper(getch());
                 if (key == 'I') {
                     // Bloquear el proceso actual
@@ -293,7 +254,7 @@ void mostrar(vector<Proceso>& procesos)
                     }
 
                     cout<<setw(10)<<procEjecucion.front().id<<setw(10)<<procEjecucion.front().estado<<setw(10)<<procEjecucion.front().operacion<<setw(10)<<procEjecucion.front().operandos[0]<<setw(10)<<procEjecucion.front().operandos[1]<<
-                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<procEjecucion.front().tSalida<<setw(10)<<procEjecucion.front().tRtrn<<setw(10)<<procEjecucion.front().tEspera<<setw(10)<<procEjecucion.front().tServicio
+                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tRtrn<<setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tServicio
                     <<setw(10)<<procEjecucion.front().tiempo_max - procEjecucion.front().tiempo_trans<<setw(10)<<procEjecucion.front().tResp<<setw(10)<<"N/A"<<endl;
 
                     if(!termi.empty())
@@ -301,7 +262,7 @@ void mostrar(vector<Proceso>& procesos)
                         for(int j = 0; j < termi.size(); j++)
                         {
                             cout<<setw(10)<<termi[j].id<<setw(10)<<termi[j].estado<<setw(10)<<termi[j].operacion<<setw(10)<<termi[j].operandos[0]<<setw(10)<<termi[j].operandos[1]<<setw(10)<<termi[j].resultado
-                            <<setw(10)<<termi[j].tLlegada<<setw(15)<<termi[j].tSalida<<setw(10)<<termi[j].tRtrn<<setw(10)<<termi[j].tEspera<<setw(10)<<termi[j].tServicio
+                            <<setw(10)<<termi[j].tLlegada<<setw(10)<<termi[j].tSalida<<setw(10)<<termi[j].tRtrn<<setw(10)<<termi[j].tEspera<<setw(10)<<termi[j].tServicio
                             <<setw(10)<<termi[j].tiempo_max - termi[j].tiempo_trans<<setw(10)<<termi[j].tResp<<setw(10)<<"N/A"<<endl;     
                         }
                     }
@@ -325,7 +286,7 @@ void mostrar(vector<Proceso>& procesos)
                             Proceso temp = memoriaAux.front();
                             memoriaAux.pop();
                             cout << setw(10) << temp.id << setw(10) << temp.estado << setw(10) << temp.operacion << setw(10) <<temp.operandos[0]<< setw(10) <<temp.operandos[1] << setw(10) << "N/A"
-                            << setw(10) << temp.tLlegada << setw(10) << temp.tSalida << setw(10) << temp.tRtrn << setw(10) <<temp.tEspera << setw(10) << temp.tServicio 
+                            << setw(10) << temp.tLlegada << setw(10) << "N/A" << setw(10) << "N/A" << setw(10) <<"N/A" << setw(10) << temp.tServicio 
                             << setw(10) << temp.tiempo_max - temp.tiempo_trans << setw(10) << temp.tResp<< setw(10) << "N/A" <<  endl;
                         }
                     }
@@ -333,20 +294,6 @@ void mostrar(vector<Proceso>& procesos)
                 }
                 
             }
-
-            // Si el proceso actual termina su ejecucion
-            if (procesoActual.tiempo_trans >= procesoActual.tiempo_max) 
-            {
-                procesoActual.estado = "Terminado";
-                procesoActual.tServicio = procesoActual.tiempo_max;
-                procesoActual.tSalida = global;
-                procesoActual.tRtrn = procesoActual.tSalida - procesoActual.tLlegada;
-                procesoActual.tEspera = procesoActual.tRtrn - procesoActual.tServicio;
-                termi.push_back(procesoActual);
-                procEjecucion.pop_back();
-                cout<<"Guardado"<<endl;
-            }
-
             if(procesoActual.quantum >= quantum)
             {
                 procesoActual.quantum = 0;
@@ -354,7 +301,93 @@ void mostrar(vector<Proceso>& procesos)
                 memoria.push(procesoActual);
                 procEjecucion.pop_back();
             }
+
+            // Si el proceso actual termina su ejecucion
+            if (procesoActual.tiempo_trans >= procesoActual.tiempo_max) {
+                procesoActual.estado = "Terminado";
+                procesoActual.tServicio = procesoActual.tiempo_max;
+                procesoActual.tSalida = global;
+                procesoActual.tRtrn = procesoActual.tSalida - procesoActual.tLlegada;
+                procesoActual.tEspera = procesoActual.tRtrn - procesoActual.tiempo_max + 1;
+                termi.push_back(procesoActual);
+                procEjecucion.pop_back();
+                cout<<"Proceso terminado\n";
+            }
+           
+
         }
+        else
+        {
+            cout<<"\nNo hay proceso en ejecucion\n";
+        }
+        
+        
+            // **Imprimir procesos en memoria**
+            cout << "\nProcesos en memoria:" << endl;
+            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Operacion" << setw(15) << "Transcurrido"<< endl;
+
+            if(!memoria.empty())
+            {
+                queue<Proceso> memoriaAux = memoria;  // Copia auxiliar para iterar
+                while (!memoriaAux.empty()) {
+                    Proceso temp = memoriaAux.front();
+                    memoriaAux.pop();
+                    cout << setw(10) << temp.id << setw(15) << temp.estado << setw(15) << temp.operacion << setw(15) << temp.tiempo_trans<< endl;
+                }  
+            }
+
+            // **Imprimir procesos bloqueados**
+            cout << "\nProcesos bloqueados:" << endl;
+            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Tiempo Bloq" << endl;
+            for (const auto& proc : bloqueado) {
+                cout << setw(10) << proc.id << setw(15) << proc.estado << setw(15) << proc.contBloq << endl;
+            }
+
+            // **Imprimir procesos terminados**
+            cout << "\nProcesos terminados:" << endl;
+            cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Resultado" << endl;
+            for (const auto& proc : termi) 
+            {
+                cout << setw(10) << proc.id << setw(15) << proc.estado << setw(15) << proc.resultado << endl;
+            }
+
+            if (kbhit())
+            {
+                key = toupper(getch());
+                if (key == 'N') 
+                        {
+                            // Crear un nuevo proceso
+                            vector<Proceso> nuevoProceso = generar_procesos(1); // Genera un proceso
+                            cout << "Proceso generado: " << nuevoProceso.front().id << endl;
+
+                            // Verificar si hay espacio en memoria
+                            if ((memoria.size() + bloqueado.size() + procEjecucion.size()) < 5) 
+                            {
+                                if(procEjecucion.empty())
+                                {
+                                    nuevoProceso.front().tLlegada = global;
+                                    procEjecucion.push_back(nuevoProceso.front());
+                                }
+                                else
+                                {
+                                    // Espacio disponible, añadir a memoria
+                                    nuevoProceso.front().estado = "Listo";
+                                    nuevoProceso.front().tLlegada = global; 
+                                    memoria.push(nuevoProceso.front());
+                                    cout << "Proceso " << nuevoProceso.front().id << " agregado a memoria." << endl;
+                                }
+                            } 
+                            else 
+                            {
+                                // No hay espacio en memoria, añadir a procesos nuevos
+                                nuevoProceso.front().estado = "Nuevo";
+                                procesos.push_back(nuevoProceso.front());
+                                cout << "Memoria llena, proceso " << nuevoProceso.front().id << " agragado a procesos nuevos." << endl;
+                            }
+                        }
+            }
+           
+            
 
         // Incrementar el tiempo global
         Sleep(1000);

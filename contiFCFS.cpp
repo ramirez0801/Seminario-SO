@@ -21,6 +21,7 @@ public:
     int operandos[2];
     string resultado;
     string estado;
+    bool tCalcu;
 
     Proceso() : id(0), tiempo_max(0), operacion('+') 
     { 
@@ -52,6 +53,7 @@ public:
         tEspera = 0;
         tServicio = 0;
         contBloq = 0;
+        tCalcu = false;
     }
 
     void ejecutar() {
@@ -169,10 +171,14 @@ void mostrar(vector<Proceso>& procesos)
 
         if(!procEjecucion.empty())
         {
-            procEjecucion.front().tResp = global - procEjecucion.front().tLlegada;  // Tiempo de respuesta
+            if(!procEjecucion.front().tCalcu)
+            {
+                procEjecucion.front().tResp = global - procEjecucion.front().tLlegada;  // Tiempo de respuesta***
+                procEjecucion.front().tCalcu = true;
+            }
+            cout<<"Respuesta: "<<procEjecucion.front().tResp<<endl;
             Proceso& procesoActual = procEjecucion.front();
             procesoActual.tiempo_trans++;
-            // **Imprimir proceso en ejecucion**
             cout << "\nProceso en ejecucion:" << endl;
             cout << left << setw(10) << "ID" << setw(15) << "Estado" << setw(15) << "Operacion"
                 << setw(15) << "Tiempo Max" << setw(15) << "Tiempo Trans" << endl;
@@ -241,7 +247,7 @@ void mostrar(vector<Proceso>& procesos)
                     }
 
                     cout<<setw(10)<<procEjecucion.front().id<<setw(10)<<procEjecucion.front().estado<<setw(10)<<procEjecucion.front().operacion<<setw(10)<<procEjecucion.front().operandos[0]<<setw(10)<<procEjecucion.front().operandos[1]<<
-                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<procEjecucion.front().tSalida<<setw(10)<<procEjecucion.front().tRtrn<<setw(10)<<procEjecucion.front().tEspera<<setw(10)<<procEjecucion.front().tServicio
+                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tRtrn<<setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tServicio
                     <<setw(10)<<procEjecucion.front().tiempo_max - procEjecucion.front().tiempo_trans<<setw(10)<<procEjecucion.front().tResp<<setw(10)<<"N/A"<<endl;
 
                     if(!termi.empty())
@@ -273,7 +279,7 @@ void mostrar(vector<Proceso>& procesos)
                             Proceso temp = memoriaAux.front();
                             memoriaAux.pop();
                             cout << setw(10) << temp.id << setw(10) << temp.estado << setw(10) << temp.operacion << setw(10) <<temp.operandos[0]<< setw(10) <<temp.operandos[1] << setw(10) << "N/A"
-                            << setw(10) << temp.tLlegada << setw(10) << temp.tSalida << setw(10) << temp.tRtrn << setw(10) <<temp.tEspera << setw(10) << temp.tServicio 
+                            << setw(10) << temp.tLlegada << setw(10) << "N/A" << setw(10) << "N/A" << setw(10) <<"N/A" << setw(10) << temp.tServicio 
                             << setw(10) << temp.tiempo_max - temp.tiempo_trans << setw(10) << temp.tResp<< setw(10) << "N/A" <<  endl;
                         }
                     }
@@ -288,16 +294,16 @@ void mostrar(vector<Proceso>& procesos)
                 procesoActual.tServicio = procesoActual.tiempo_max;
                 procesoActual.tSalida = global;
                 procesoActual.tRtrn = procesoActual.tSalida - procesoActual.tLlegada;
-                procesoActual.tEspera = procesoActual.tRtrn - procesoActual.tiempo_max;
+                procesoActual.tEspera = procesoActual.tRtrn - procesoActual.tiempo_max + 1;
                 termi.push_back(procesoActual);
                 procEjecucion.pop_back();
+                cout<<"Proceso terminado\n";
             }
 
         }
         else
         {
-            cout<<"No hay proceso en ejecucion\n";
-
+            cout<<"\nNo hay proceso en ejecucion\n";
         }
         
         
