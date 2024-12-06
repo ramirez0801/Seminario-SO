@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulación Productor-Consumidor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .buffer {
+      display: grid;
+      grid-template-columns: repeat(20, 25px);
+      gap: 2px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .cell {
+      width: 25px;
+      height: 25px;
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .button-container {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 0 10px;
+    }
+
+    button:disabled {
+      background-color: #888;
+    }
+
+    /* Estilos para tablas */
+    .tables {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 20px;
+    }
+
+    .table-container {
+      width: 48%;
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      background-color: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    td {
+      background-color: #f9f9f9;
+    }
+
+    /* Mensaje de productor dormido */
+    .message {
+      margin-top: 20px;
+      color: #ff6347;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Simulación Productor-Consumidor</h1>
+
+    <div class="buffer" id="buffer"></div>
+
+    <div class="message" id="producerStatus"></div>
+
+    <div class="button-container">
+      <button id="startButton">Iniciar Simulación</button>
+      <button id="pauseButton" disabled>Pausar</button>
+      <button id="resetButton" disabled>Reiniciar</button> <!-- Botón de reinicio -->
+    </div>
+
+    <!-- Tablas Productor y Consumidor lado a lado -->
+    <div class="tables">
+      <!-- Tabla Productor -->
+      <div class="table-container">
+        <h3>Tabla Productor</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Operación</th>
+              <th>Elemento</th>
+              <th>Posición</th>
+            </tr>
+          </thead>
+          <tbody id="producerTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Tabla Consumidor -->
+      <div class="table-container">
+        <h3>Tabla Consumidor</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Operación</th>
+              <th>Elemento</th>
+              <th>Posición</th>
+            </tr>
+          </thead>
+          <tbody id="consumerTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BUFFER_SIZE = 20;
+    let buffer = Array(BUFFER_SIZE).fill(null);
+    let producerPos = 0;
+    let consumerPos = 0;
+    let producerInterval, consumerInterval;
+    let running = false;
+
+    function createBuffer() {
+      const bufferContainer = document.getElementById("buffer");
+      bufferContainer.innerHTML = '';
+      for (let i = 0; i < BUFFER_SIZE; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        bufferContainer.appendChild(cell);
+      }
+    }
+
+    function updateBuffer() {
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach(cell => {
+        const index = parseInt(cell.dataset.index);
+        cell.textContent = buffer[index] || '';
+        cell.style.backgroundColor = '#ffffff';
+
+        if (index === producerPos) {
+          cell.style.backgroundColor = "lightgreen";
+        }
+        if (index === consumerPos) {
+          cell.style.backgroundColor = "lightcoral";
+        }
+      });
+    }
+
+    function randomItem() {
+      const items = ["@", "#", "$", "%", "&", "*"];
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function addRowToTable(tableId, operation, item, position) {
+      const tableBody = document.getElementById(tableId);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${operation}</td><td>${item}</td><td>${position}</td>`;
+      tableBody.appendChild(row);
+    }
+
+    function producer() {
+      const producerStatus = document.getElementById("producerStatus");
+
+      // Verificar si hay espacio en el buffer (solo producir si hay espacio disponible)
+      if (buffer.includes(null)) {
+        const item = randomItem();
+        while (buffer[producerPos] !== null) {
+          producerPos = (producerPos + 1) % BUFFER_SIZE; // Avanzar a la siguiente posición vacía
+        }
+
+        buffer[producerPos] = item;
+        addRowToTable("producerTableBody", "Producir", item, producerPos);
+        producerPos = (producerPos + 1) % BUFFER_SIZE;
+        updateBuffer();
+        producerStatus.textContent = ''; // Limpiar mensaje de "dormido"
+      } else {
+        // El productor está "dormido"
+        producerStatus.textContent = 'El productor está dormido, esperando espacio en el buffer...';
+      }
+    }
+
+    function consumer() {
+      if (buffer[consumerPos] !== null) {
+        const item = buffer[consumerPos];
+        buffer[consumerPos] = null;
+        addRowToTable("consumerTableBody", "Consumir", item, consumerPos);
+        consumerPos = (consumerPos + 1) % BUFFER_SIZE;
+        updateBuffer();
+      }
+    }
+
+    function startSimulation() {
+      createBuffer();
+      document.getElementById("startButton").disabled = true;
+      document.getElementById("pauseButton").disabled = false;
+      document.getElementById("resetButton").disabled = false;
+      running = true;
+
+      producerInterval = setInterval(producer, 1000);
+      consumerInterval = setInterval(consumer, 1500);
+    }
+
+    function pauseSimulation() {
+      if (running) {
+        clearInterval(producerInterval);
+        clearInterval(consumerInterval);
+        running = false;
+        document.getElementById("pauseButton").textContent = "Reanudar";
+      } else {
+        producerInterval = setInterval(producer, 1000);
+        consumerInterval = setInterval(consumer, 1500);
+        running = true;
+        document.getElementById("pauseButton").textContent = "Pausar";
+      }
+    }
+
+    function resetSimulation() {
+      clearInterval(producerInterval);
+      clearInterval(consumerInterval);
+
+      buffer = Array(BUFFER_SIZE).fill(null);
+      producerPos = 0;
+      consumerPos = 0;
+      running = false;
+
+      // Limpiar las tablas
+      document.getElementById("producerTableBody").innerHTML = '';
+      document.getElementById("consumerTableBody").innerHTML = '';
+
+      // Restablecer la interfaz
+      createBuffer();
+      updateBuffer();
+
+      document.getElementById("startButton").disabled = false;
+      document.getElementById("pauseButton").disabled = true;
+      document.getElementById("pauseButton").textContent = "Pausar";
+      document.getElementById("resetButton").disabled = true;
+      document.getElementById("producerStatus").textContent = '';
+    }
+
+    document.getElementById("startButton").addEventListener("click", startSimulation);
+    document.getElementById("pauseButton").addEventListener("click", pauseSimulation);
+    document.getElementById("resetButton").addEventListener("click", resetSimulation);
+  </script>
+
+</body>
+</html>
