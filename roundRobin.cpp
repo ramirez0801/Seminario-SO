@@ -279,7 +279,7 @@ void mostrar(vector<Proceso>& procesos)
                     cout<<left<<setw(10)<<"ID"<<setw(10)<<"Estado"<<setw(10)<<"Operacion"<<setw(10)<<"Dato 1"<<setw(10)<<"Dato 2"<<setw(10)<<"Result"
                     <<setw(10)<<"Llegada"<<setw(10)<<"Fin"<<setw(10)<<"Retorno"<<setw(10)<<"Espera"<<setw(10)<<"Servicio"<<setw(10)<<"Resta"<<setw(10)<<"Respuesta"
                     <<setw(10)<<"Bloqueado\n";
-
+                    //Nuevos
                     if(!procesos.empty())
                     {
                         for(int i = 0; i < procesos.size(); i++)
@@ -288,32 +288,32 @@ void mostrar(vector<Proceso>& procesos)
                             <<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<endl;
                         }
                     }
-
+                    //Ejecucion
                     cout<<setw(10)<<procEjecucion.front().id<<setw(10)<<procEjecucion.front().estado<<setw(10)<<procEjecucion.front().operacion<<setw(10)<<procEjecucion.front().operandos[0]<<setw(10)<<procEjecucion.front().operandos[1]<<
-                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().contEspera<<setw(10)<<procEjecucion.front().tiempo_trans
+                    setw(10)<<"N/A"<<setw(10)<<procEjecucion.front().tLlegada<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<global - procEjecucion.front().tLlegada - procEjecucion.front().tServicio<<setw(10)<<procEjecucion.front().tiempo_trans
                     <<setw(10)<<procEjecucion.front().tiempo_max - procEjecucion.front().tiempo_trans<<setw(10)<<procEjecucion.front().tResp<<setw(10)<<"N/A"<<endl;
-
+                    //Terminados
                     if(!termi.empty())
                     {
                         for(int j = 0; j < termi.size(); j++)
                         {
                             cout<<setw(10)<<termi[j].id<<setw(10)<<termi[j].estado<<setw(10)<<termi[j].operacion<<setw(10)<<termi[j].operandos[0]<<setw(10)<<termi[j].operandos[1]<<setw(10)<<termi[j].resultado
-                            <<setw(10)<<termi[j].tLlegada<<setw(10)<<termi[j].tSalida<<setw(10)<<termi[j].tRtrn<<setw(10)<<termi[j].contEspera<<setw(10)<<termi[j].tiempo_trans
+                            <<setw(10)<<termi[j].tLlegada<<setw(10)<<termi[j].tSalida<<setw(10)<<termi[j].tRtrn<<setw(10)<<termi[j].tEspera<<setw(10)<<termi[j].tiempo_trans
                             <<setw(10)<<termi[j].tiempo_max - termi[j].tiempo_trans<<setw(10)<<termi[j].tResp<<setw(10)<<"N/A"<<endl;
                         }
                     }
-
+                    //Bloqueados
                     if(!bloqueado.empty())
                     {
                         for(int j = 0; j < bloqueado.size(); j++)
                         {
                             cout<<setw(10)<<bloqueado[j].id<<setw(10)<<bloqueado[j].estado<<setw(10)<<bloqueado[j].operacion<<setw(10)<<bloqueado[j].operandos[0]<<setw(10)<<bloqueado[j].operandos[1]<<setw(10)<<"N/A"
-                            <<setw(10)<<bloqueado[j].tLlegada<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<bloqueado[j].contEspera<<setw(10)<<bloqueado[j].tiempo_trans
+                            <<setw(10)<<bloqueado[j].tLlegada<<setw(10)<<"N/A"<<setw(10)<<"N/A"<<setw(10)<<global - bloqueado[j].tLlegada - bloqueado[j].tServicio<<setw(10)<<bloqueado[j].tiempo_trans
                             <<setw(10)<<bloqueado[j].tiempo_max - bloqueado[j].tiempo_trans<<setw(10)<<bloqueado[j].tResp<<setw(10)<<7 - bloqueado[j].contBloq<<endl;
 
                         }
                     }
-
+                    //Listos    
                     if(!memoria.empty())
                     {
                         queue<Proceso> memoriaAux = memoria;
@@ -322,7 +322,7 @@ void mostrar(vector<Proceso>& procesos)
                             Proceso temp = memoriaAux.front();
                             memoriaAux.pop();
                             cout << setw(10) << temp.id << setw(10) << temp.estado << setw(10) << temp.operacion << setw(10) <<temp.operandos[0]<< setw(10) <<temp.operandos[1] << setw(10) << "N/A"
-                            << setw(10) << temp.tLlegada << setw(10) << "N/A" << setw(10) << "N/A" << setw(10) <<temp.contEspera << setw(10) << temp.tiempo_trans
+                            << setw(10) << temp.tLlegada << setw(10) << "N/A" << setw(10) << "N/A" << setw(10) <<global - temp.tLlegada - temp.tServicio << setw(10) << temp.tiempo_trans
                             << setw(10) << temp.tiempo_max - temp.tiempo_trans << setw(10) << temp.tResp<< setw(10) << "N/A" <<  endl;
                         }
                     }
