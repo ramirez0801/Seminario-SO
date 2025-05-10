@@ -1,4 +1,4 @@
-#Simulacion de Procesos/ Process Simulation
+# Simulacion de Procesos / Process Simulation
 
 Este repositorio contiene una simulación de algoritmos de planificación de tareas en un procesador, implementando tres enfoques principales: FCFS (First Come, First Served), Planificación por lotes, Round Robin
 
